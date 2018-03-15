@@ -7,7 +7,7 @@
 </template>
 
 <style>
-    .vm-dropbox{
+    .vm-dropbox.vm-overlay{
         position: absolute;
     }
 </style>
@@ -85,7 +85,7 @@
                         Dom.css(self.$el, {
                             bottom: bodyHeight - rect.top,
                             height: rect.top
-                        });
+                        }); 
                     }else{
                         Dom.css(self.$el, {
                             top: rect.bottom,

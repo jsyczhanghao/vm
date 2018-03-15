@@ -1,7 +1,7 @@
 <template>
     <a href="javascript:" class="vm-uploader">
         <slot><i class="vm-uploader-icon"></i></slot>
-        <input type="file" class="vm-uploader-input" @click="$emit('click')" @change="onSelect" ref="uploader" :multiple="multiple" />
+        <input type="file" class="vm-uploader-input" :accept="accept" @click="$emit('click')" @change="onSelect" ref="uploader" :multiple="multiple" />
     </a>
 </template>
 
@@ -44,11 +44,13 @@
         position: absolute;
         top: 0px;
         left: 0px;
+        z-index: 1;
     }
 </style>
 
 <script>
     import {Util} from '../../helper';
+    import Toast from '../toast';
 
     var Uploader = {
         name: 'uploader',
@@ -57,6 +59,11 @@
             multiple: {
                 type: Boolean,
                 default: false
+            },
+
+            accept: {
+                type: String,
+                default: '*'
             },
 
             usePack: {
@@ -71,8 +78,8 @@
 
             beforeUploadProcessor: {
                 type: Function,
-                default(files){
-                    return files;
+                default(files, next){
+                    return next(files);
                 }
             },
 
@@ -105,15 +112,15 @@
             upload(files = []){
                 var self = this;
                 
-                files = self.beforeUploadProcessor(files);
+                self.beforeUploadProcessor(files, function(files){
+                    if(!self.canUpload(files)){
+                        self.$emit('reject', files);
+                        return false;
+                    }
 
-                if(!self.canUpload(files)){
-                    self.$emit('reject', files);
-                    return false;
-                }
-
-                self.files = self.files.concat(files);
-                self._upload();
+                    self.files = self.files.concat(files);
+                    self._upload();
+                });
             },
 
             _upload(){

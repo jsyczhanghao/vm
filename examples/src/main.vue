@@ -2,11 +2,9 @@
     <page>
         <topbar :left-enabled="false">vm</topbar>
 
-        <list :source="source" class="navs">
-            <template slot="row" scope="props">
-                <a :href="'#/' + props.data">{{props.data}}</a>
-            </template>
-        </list>
+        <vm-scroll class="navs" >
+            <a href="javascript:" v-for="item of source" @click="go(item)">{{item}}</a>
+        </vm-scroll>
     </page>
 </template>
 
@@ -54,7 +52,10 @@
         data(){
             return {
                 source: [
+                    'components/layout',
                     'components/button',
+                    'components/segment',
+                    'components/forward',
                     'components/overlay',
                     'components/alert',
                     'components/toast',
@@ -66,12 +67,20 @@
                     'components/searchbar',
                     'components/uploader',
                     'components/popover',
-                    'components/grid',
                     'components/form',
-                    'components/filter'
-//                    'components/iosselect',
-//                    'components/datepicker',
+                    'components/filter',
+                    'components/slider',
+                    'components/tabbar',
+                    'directives/badge',
+                    'directives/lazyload',
+                    'directives/draggable'
                 ]
+            }
+        },
+
+        methods: {
+            go(url){
+                this.$router.push(url);
             }
         }
     }                    

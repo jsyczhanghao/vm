@@ -25,12 +25,26 @@ class Draggable{
 
             justStart = true;
 
-            if(target && options.ignores && options.ignores.test(target.tagName)){
-                return false;
+            if(target && options.ignores){
+                if(typeof options.ignores == 'function'){
+                    if(options.ignores.test(target)){
+                        return false;
+                    }
+                }else if(typeof options.ignores == 'string'){
+                    if(Dom.matches(target, options.ignores)){
+                        return false;
+                    }
+                }else{
+                    if(options.ignores.test(target.tagName)){
+                        return false;
+                    }
+                } 
             }
 
             var {x, y} = self.translates = Draggable.getTransform(self.dom);
-            var {pageX, pageY} = self.touch = e.touches[0];
+            var {pageX, pageY} = e.touches[0];
+
+            self.touch = {pageX, pageY};
 
             Event.trigger(self.dom, 'drag:start', {
                 x, y, pageX, pageY, e
@@ -48,6 +62,7 @@ class Draggable{
             var {pageX, pageY} = self.touch;
             var axis = options.axis;
             var x = 0, y = 0;
+
             var rx = (touch.pageX - pageX)/options.stackTimes, ry = (touch.pageY - pageY)/options.stackTimes;
             
             if(/x/.test(axis)){
@@ -59,7 +74,7 @@ class Draggable{
             }
 
             var info = {
-                x, y, pageX: touch.pageX, pageY: touch.pageY, e
+                x, y, pageX: touch.pageX, pageY: touch.pageY, e, rx, ry
             };
 
             self.translates = {x, y};
@@ -115,7 +130,7 @@ class Draggable{
             if(target.$draggable){
                 $draggable = target.$draggable;
 
-                if(isX && $draggable.options.axis == 'x' || $draggable.options.axis != 'x'){
+                if(isX && $draggable.options.axis == 'x' || !isX && $draggable.options.axis != 'x'){
                     break;
                 }
             }
@@ -157,5 +172,6 @@ export default{
     },
 
     Draggable,
+    Constructor: Draggable,
     name: 'draggable'
 };

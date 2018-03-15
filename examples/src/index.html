@@ -9,32 +9,17 @@ body{
     font-size: 0.14rem;
     font-family: 微软雅黑;
 }
-
-.router{
-    position: absolute;
-    transition: all .5s cubic-bezier(.55, 0, .1, 1);
-}
-
-.slide-left-enter, .slide-right-leave-active{
-    opacity: 0,
-    -webkit-transform: translate(100%, 0);
-    transform: translate(100%, 0);
-}
-
-.slide-left-leave-active, .slide-right-enter{
-    opacity: 0;
-    -webkit-transform: translate(-30%, 0);
-    transform: translate(-30%, 0);
-}
 </style>
 </head>
 <body>
+
     <div id="app">
-        <transition :name="transitionName">
-            <keep-alive>
-                <router-view class="router"></router-view>
-            </keep-alive>
-        </transition>
+        <app-transition />
     </div>
 </body>
+<script>
+document.ontouchmove = function(e){
+	e.preventDefault();
+};
+</script>
 </html>

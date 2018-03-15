@@ -1,7 +1,9 @@
 import VueRouter from 'vue-router';
+import AppTransition from 'app-transition';
 import Vue from 'vue';
 require('../../rem.js');
 
+Vue.use(AppTransition);
 Vue.use(VueRouter);
 
 import Main from './main.vue';
@@ -16,16 +18,58 @@ import Searchbar from './components/searchbar.vue';
 import Search from './components/search.vue';
 import Uploader from './components/uploader.vue';
 import Popover from './components/popover.vue';
-import Grid from './components/grid.vue';
 import Form from './components/form.vue';
 import Filter from './components/filter.vue';
 import Overlay from './components/overlay.vue';
+import Slider from './components/slider.vue';
+import Tabbar from './components/tabbar.vue';
+import Layout from './components/layout.vue';
+import Forward from './components/forward.vue';
+import Badge from './directives/badge.vue';
+import Draggable from './directives/draggable.vue';
+import Lazyload from './directives/lazyload.vue';
+import Segment from './components/segment.vue';
+
+import {Topbar} from 'vm';
+import VM from 'vm';
+
+Vue.use(VM);
 
 const router = new VueRouter({
     routes: [
         {
             path: '/',
             component: Main
+        },
+
+        {
+            path: '/components/layout',
+            component: Layout
+        },
+
+        {
+            path: '/components/segment',
+            component: Segment
+        },
+
+        {
+            path: '/directives/lazyload',
+            component: Lazyload
+        },
+
+        {
+            path: '/components/forward',
+            component: Forward
+        },
+
+        {
+            path: '/directives/badge',
+            component: Badge
+        },
+
+        {
+            path: '/directives/draggable',
+            component: Draggable
         },
 
         {
@@ -43,10 +87,6 @@ const router = new VueRouter({
             component: Filter
         },
 
-        {
-            path: '/components/grid',
-            component: Grid
-        },
 
         {
             path: '/components/form',
@@ -101,22 +141,21 @@ const router = new VueRouter({
         {
             path: '/components/list',
             component: List
+        },
+
+        {
+            path: '/components/slider',
+            component: Slider
+        },
+
+        {
+            path: '/components/tabbar',
+            component: Tabbar
         }
     ]
 });
 
 new Vue({
     el: '#app',
-    router: router,
-    data(){
-        return {
-            transitionName: 'fade'
-        };
-    },
-    // watch $route 决定使用哪种过渡
-    watch: {
-        '$route'(to, from){
-            this.transitionName = to.path.split('/').length < from.path.split('/').length ? 'slide-right' : 'slide-left';
-        }
-    }
+    router: router
 });

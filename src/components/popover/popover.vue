@@ -2,13 +2,19 @@
     <dropbox class="vm-popover" ref="box" :offset="offset">
         <vm-mask :visible="true" class="vm-popover-mask" @click="$refs.box.close()" />
 
-        <div class="vm-popover-inner" ref="inner">
-            <i class="vm-popover-arrow" ref="arrow"></i>
+        <div class="vm-popover-inner" ref="inner" :style="{background: bgColor}">
+            <i class="vm-popover-arrow" ref="arrow" :style="{
+                borderColor: bgColor
+            }"></i>
             <a 
                 href="javascript:void(0);" 
                 :class="['vm-popover-item', action.className]" 
                 v-for="(action, label) of actions" 
                 @click.stop="callAction(label)"
+                :style="{
+                    color: color,
+                    borderBottom: '1px solid ' + color
+                }"
             >
                 <i v-if="action.icon" :class="['icon', action.icon]"></i>
                 {{label}}
@@ -19,24 +25,30 @@
 
 <style lang="less">
     .vm-popover{
+        font-weight: normal;
         line-height: normal;
         height: 100%;
 
         &.vm-mask{
-            background: transparent;
+            background: transparent !important;
         }
 
         .vm-overlay{
-            background: transparent;
+            background: transparent !important;
             width: auto;
         }
 
         .vm-dropbox-bottom{
             .vm-popover-arrow{
-                border-bottom-color: transparent;
-                border-top-color: #28304E; 
+                border-bottom-color: transparent !important;
                 top: 100%;
                 transform: translate(-0.08rem, -10%);
+            }
+        }
+
+        .vm-dropbox-top{
+            .vm-popover-arrow{
+                border-top-color: transparent !important;
             }
         }
     }
@@ -47,7 +59,6 @@
 
     .vm-popover-inner{
         border-radius: 3px;
-        background: #28304E;
         padding: 0px .08rem;
         margin: .12rem 0px;
         position: relative;
@@ -57,14 +68,12 @@
     .vm-popover-item{
         display: block;
         text-decoration: none;
-        color: #fff;
         padding: .06rem 0px;
         font-size: .12rem;
         text-align: left;
-        border-bottom: 1px solid #ddd;
 
         &:last-child{
-            border: 0px;
+            border: 0px !important;
         }
 
         .icon{
@@ -78,7 +87,10 @@
     .vm-popover-arrow{
         position: absolute;
         content: "";  
-        border: 8px solid transparent;  
+        border-width: 8px;
+        border-style: solid;
+        border-left-color: transparent !important;
+        border-right-color: transparent !important;
         height: 0px;
         width: 0px;
         display: inline-block;
@@ -93,7 +105,9 @@
     import vmMask from '../mask';
     import {Util, Event, Dom} from '../../helper';
 
-    export default{
+    var PopOver = {
+        name: 'popover',
+
         props: {
             actions: {
                 type: Object,
@@ -109,6 +123,20 @@
                         x: 5,
                         y: 5
                     }
+                }
+            },
+
+            color: {
+                type: String,
+                default: () => {
+                    return PopOver.config('color');
+                }
+            },
+
+            bgColor: {
+                type: String,
+                default: () => {
+                    return PopOver.config('bgColor');
                 }
             }
         },
@@ -165,4 +193,11 @@
             }
         }
     }
+
+    Util.defineConfig(PopOver, {
+        color: '#fff',
+        bgColor: '#28304E'
+    });
+
+    export default PopOver;
 </script>

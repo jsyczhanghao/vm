@@ -2,6 +2,10 @@ var css3s = ['transform', 'transition'];
 
 import Util from './util';
 
+if(!Element.prototype.matches){
+    Element.prototype.matches = Element.prototype.matchesSelector || Element.prototype.webkitMatchesSelector;
+}
+
 export default{
     offset(element){
         var top = 0, left = 0;
@@ -15,6 +19,10 @@ export default{
             left,
             top
         }
+    },
+
+    matches(target, selector){
+        return target.matches(selector);
     },
     
     siblings(element){
@@ -101,12 +109,18 @@ export default{
     },
 
     addClass(element, className){
-        if(this.hasClass(element, className)){
+        if(!this.hasClass(element, className)){
             element.className += ' ' + className;
         }
     },
 
     removeClass(element, className){
-        element.className = element.className.replace(new RegExp('(\\s+|^)' + className + '(\\s+|$)'));
+        element.className = element.className.replace(new RegExp('(\\s+|^)' + className + '(\\s+|$)'), '');
+    },
+
+    create(str){
+        var el = document.createElement('div');
+        el.innerHTML = str;
+        return el.childNodes[0];
     }
 }

@@ -29,7 +29,9 @@
 </style>
 
 <script>
-    export default{
+    import {Util} from '../../helper';
+
+    var Single = {
         name: 'single-filter',
 
         props: {
@@ -47,7 +49,9 @@
 
             selectedClassName: {
                 type: String,
-                default: 'vm-filter-selected'
+                default: () => {
+                    return Single.config('selectedClassName');
+                }
             },
 
             value: {
@@ -86,7 +90,7 @@
 
         mounted(){
             this.render();
-            this.value && this.setValue(this.value);
+            (this.value != undefined && this.value != null) && this.setValue(this.value);
         },
 
         methods: {
@@ -127,11 +131,7 @@
                 var self = this;
                 var className = ['vm-filter-item'];
 
-                if(item.value == self.val){
-                    className.push('vm-filter-selected');
-                    self.selectedClassName && className.push(self.selectedClassName);
-                }
-
+                item.value == self.val && self.selectedClassName && className.push(self.selectedClassName);
                 return className.join(' ');
             },
 
@@ -142,4 +142,10 @@
             }
         }
     }
+
+    Util.defineConfig(Single, {
+        selectedClassName: 'vm-filter-selected'
+    });
+
+    export default Single;
 </script>

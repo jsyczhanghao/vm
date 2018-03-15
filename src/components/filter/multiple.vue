@@ -11,18 +11,22 @@
 
     .vm-filter-tick{
         &:after{
-            content: "";
+            font-family: "vm-iconfont" !important;
+            font-style: normal;
+            content: "\e68c";
             display: inline-block;
             float: right;
+            font-size: 0.18rem;
             height: .44rem;
             width: .20rem;
-            background: url(./selected@2x.png?__inline) no-repeat center center;
         }
     }
 </style>
 
 <script>
     import Single from './single';
+    import {Util} from '../../helper';
+    import '../icon/iconfont.css';
 
     export default{
         mixins: [Single],
@@ -98,7 +102,7 @@
                 var className = Single.methods.getItemClass(item);
 
                 if(this.val.indexOf(item.value) > -1){
-                    className += ' vm-filter-tick';
+                    className += ' vm-filter-tick ' + this.selectedClassName;
                 }
 
                 return className;

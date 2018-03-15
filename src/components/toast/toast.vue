@@ -1,26 +1,42 @@
 <template>
     <vm-mask v-if="mask" :visible="visibility">
         <overlay :class="'vm-toast ' + className" position="center" :visible="true">
-            <i :class="'vm-toast-icon ' + iconClass" v-if="iconClass"></i>
-            <slot>{{content}}</slot>
+            <span class="vm-toast-inner">
+                <slot name="icon">
+                    <i :class="['vm-toast-icon', iconClass]" v-if="iconClass"></i>
+                </slot>
+                
+                <slot>{{cont}}</slot>
+            </span>
         </overlay>
     </vm-mask>
     <overlay v-else :visible="visibility" :class="'vm-toast ' + className" position="center">
-        <i :class="'vm-toast-icon ' + iconClass" v-if="iconClass"></i>
-        <slot>{{content}}</slot>
+        <span class="vm-toast-inner">
+            <slot name="icon">
+                <i :class="['vm-toast-icon', iconClass]" v-if="iconClass"></i>
+            </slot>
+
+            <slot>{{cont}}</slot>
+        </span>
     </overlay>
 </template>
 
 <style>
-    .vm-toast{
+    .vm-toast.vm-overlay{
+        text-align: center;
+        width: 90%;
+        background: transparent;
+    }
+
+    .vm-toast-inner{
+        word-break: break-all;
+        display: inline-block;
         font-size: 0.16rem;
         color: #FFFFFF;
         line-height: 0.28rem;
-        padding: 0.08rem 0.2rem;
-        max-width: 90%;
+        padding: 0.08rem 0.15rem;
         background: rgba(0, 0, 0, 0.7);
         border-radius: 4px;
-        text-align: center;
     }
 
     .vm-toast-icon{
@@ -34,17 +50,27 @@
     }
 
     .vm-toast-success{
-        background-image: url(./success@3x.png?__inline);
+        font-family: "vm-iconfont" !important;
+        font-size: 0.36rem;
+        font-style: normal;
+        color: rgb(133, 205, 158);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    .vm-toast-success:before{ 
+        content: "\e68d"; 
     }
 
     .vm-toast-loading{
-        background-image: url(./loading.gif?__inline);
+        background-image: url(../../assets/loading.gif);
     }
 </style>
 
 <script>
     import vmMask from '../mask';
     import Overlay from '../overlay';
+    import '../icon/iconfont.css';
 
     export default{
         name: 'toast',
@@ -70,13 +96,26 @@
 
         data(){
             return {
+                cont: this.content,
                 visibility: true
+            }
+        },
+
+        watch: {
+            content(v){
+                this.setContent(v);
             }
         },
 
         components: {
             Overlay,
             vmMask
+        },
+
+        methods: {
+            setContent(content){
+                this.cont = content;
+            }
         }
     };
 </script>

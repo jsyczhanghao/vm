@@ -1,11 +1,9 @@
 <template>
     <page position="right" :fx="fx" :visible="visibility" class="vm-search" ref="page">
         <topbar :left-enabled="false">
-            <searchbar :style="{
-                'margin-right': '2.5em'
-            }" :placeholder="placeholder" :maxlength="maxlength" ref="search" :theme="theme"
+            <searchbar :placeholder="placeholder" :maxlength="maxlength" ref="search" :input-bg-color="inputBgColor"
                         :search-button-enabled="closeAfterSelectHistory" @submit="submit" v-model="val" />
-            <a href="javascript:" class="vm-search-cancel" @touchstart="cancel" slot="right">取消</a>
+            <a href="javascript:" class="vm-search-cancel" @touchend="cancel" slot="right">取消</a>
         </topbar>
 
         <div class="vm-search-inner">
@@ -20,7 +18,7 @@
                 </div>
                 <div class="vm-search-historys">
                     <a v-for="(item, index) of historys" class="vm-search-history" href="javascript:" @click="clickHistory(item, index)">
-                        <slot name="history-row" :data="item">{{item}}</slot>
+                        <slot name="history-row" :data="item">{{item.length > 20 ? item.substring(0, 20) + '..' : item}}</slot>
                     </a>
                 </div>
             </div>
@@ -50,22 +48,30 @@
     .vm-search-cancel{
         float: right;
         width: .32rem;
-        margin-right: 0.08rem;
         display: inline-block;
         text-decoration: none;
-        color: #fff;
+        color: inherit;
         font-size: 0.14rem;
+        font-weight: normal;
     }
 
     .vm-search{
-        .vm-list{
-            li{
-                border-bottom: 1px solid #E1E1E1;
-            }
-        }
+        font-weight: normal;
 
         .vm-list-rows{
             margin-bottom: .3rem;
+        }
+
+        .vm-searchbar-inner{
+            margin: 0px;
+        }
+
+        .vm-searchbar{
+            padding-top: 0px;
+            padding-bottom: 0px;
+            padding-right: 0.45rem;
+            box-sizing: border-box;
+            width: 100%;
         }
     }
 
@@ -124,11 +130,6 @@
         },
 
         props: {
-            theme: {
-                type: String,
-                default: 'white'
-            },
-
             source: {
                 default(){
                     return [];
@@ -210,7 +211,8 @@
             return {
                 caches: {},
                 isEmpty: true,
-                historys: historys
+                historys: historys,
+                timeout: "",
             };
         },
 
@@ -251,7 +253,13 @@
                     let param = {};
                     param[self.kw] =  self.val;
                     self.$list.setParams(param, true);
-                    self.$list.refresh(false, false);
+                    if(this.timeout){
+                        clearTimeout(this.timeout)
+                    }
+                    this.timeout = setTimeout(()=>{
+                        self.$list.refresh();
+                    },400)
+                    
                 }
             },
 

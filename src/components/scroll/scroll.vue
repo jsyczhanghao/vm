@@ -1,10 +1,9 @@
 <template>
-    <div :class="'vm-scroll vm-scroll-' + axis">
+    <div :class="'vm-scroll vm-scroll-' + axis" @scroll="onScroll">
         <div ref="inner" class="vm-scroll-inner" @drag:start="onDragStart" @draging="onDraging" @drag:end="onDragEnd">
-            <div class="vm-scroll-pulldown" ref="pulldown" v-if="axis == 'y' && $slots.pulldown">
-                <slot name="pulldown"></slot>
-            </div>
+            <slot name="header"></slot>
             <slot></slot>
+            <slot name="footer"></slot>
         </div>
 
         <div class="vm-scroll-bar" ref="bar" v-if="scrollbars" v-show="barVisible" :class="{'vm-scroll-bar-transition': !!fxer}"></div>
@@ -30,7 +29,6 @@
 
     .vm-scroll-y{
         overflow: hidden;
-
         & > .vm-scroll-bar{
             right: 0px;
             width: 2px;
@@ -56,19 +54,12 @@
             white-space: nowrap;
         }
     }
-
-    .vm-scroll-pulldown{
-        width: 100%;
-        position: absolute;
-        transform: translateY(-100%);
-        -webkit-transform: translateY(-100%);
-    }
 </style>
 
 <script>
     import Autosize from '../../directives/autosize';
     import Draggable from '../../directives/draggable';
-    import {Dom, Util} from '../../helper';
+    import {Dom, Util, Event} from '../../helper';
 
     export default{
         name: 'scroll',
@@ -89,6 +80,21 @@
                 default(k){
                     return Math.sqrt(1 - (--k * k));
                 }
+            },
+
+            ignores: {
+                type: [RegExp, Function, String],
+                default: null
+            },
+
+            maxPos: {
+                type: Number,
+                default: null
+            },
+
+            minPos: {
+                type: Number,
+                default: null
             }
         },
 
@@ -108,14 +114,17 @@
         mounted: function(){   
             var self = this;
 
+            self.pos = 0;
             self.$drag = new Draggable.Draggable(self.$refs.inner, {
                 axis: self.axis,
+                ignores: self.ignores,
                 canDrag: (info) => {
                     return !!self.eSize;
                 }
             });
 
-            self.axis == 'y' && new Autosize.AutoSize(self.$el, self);
+            self.axis == 'y' && (this.$autosize = new Autosize.AutoSize(self.$el, self));
+            self.$actived = true;
 
             Util.observer(self.$refs.inner, {
                 childList: true,
@@ -123,9 +132,24 @@
             }, (mutations) => {
                 self.refresh();
             });
+
+            Event.on(window, 'resize', () => {
+                self.refresh();
+            });
+
+            self.refresh();
         },
 
         methods: {
+            onScroll(){
+                var self = this;
+
+                if(self.$el.scrollTop && self.axis == 'y'){
+                    self.scrollTo(-self.$el.scrollTop);
+                    self.$el.scrollTop = 0;
+                }
+            },
+
             refresh(){
                 var self = this;
                 var method = self.axis == 'x' ? 'width' : 'height';
@@ -133,8 +157,8 @@
                 var s1 = self.eSize = Dom[method](self.$el);
                 var s2 = self.iSize = Dom[method](self.$refs.inner);
 
-                self.max = self.axis == 'y' && self.$refs.pulldown ? Dom[method](self.$refs.pulldown) : 0;
-                self.min = Math.min(0, s1 - s2);
+                self.max = self.maxPos != null ? self.maxPos : 0;
+                self.min = self.minPos != null ? self.minPos : Math.min(0, s1 - s2);
 
                 if(self.scrollbars && s1 && s2){
                     self.barPercent = s1 / Math.max(s1, s2);
@@ -170,19 +194,8 @@
 
                 duration >= 300 && self.resetBase();
                 self.$emit('draging', translate); 
-
-                if(translate >= self.max){
-                    self.$emit('drag:limit', translate, 1);
-                    stack = 3;
-                }else if(translate <= self.min){
-                    self.$emit('drag:limit', translate, -1);
-                    stack = 3;
-                }else{
-                    self.$emit('drag:normal', translate);
-                }
-
-                self.scrollBarTo(translate);
-                self.$drag.stack(stack);
+                self.scrollTo(translate);
+                self.$drag.stack(translate >= self.max || translate <= self.min ? 3 : 1);
             },
 
             onDragEnd(event){
@@ -211,7 +224,7 @@
                         destination = 0;
                     }
 
-                    duration = speed / deceleration;
+                    duration = speed / deceleration / 2;
                     duration > 300 && self.scrollTo(destination, duration);
                 }
 
@@ -221,12 +234,21 @@
                 self.base = null;
             },
 
-            scrollTo(destination, duration = 0){
+            scrollTo(destination, duration = 0, limitMaxOrMin = false){
                 var self = this;
+
+                if(limitMaxOrMin){
+                    if(destination >= self.max){
+                        destination = self.max;
+                    }else if(destination <= self.min){
+                        destination = self.min;
+                    }
+                }
 
                 if(!duration){ 
                     self.pos = destination;
                     Dom.css(self.$refs.inner, 'transform', 'translate' + this.axi + '(' + destination + 'px)');
+                    self.$emit('scrolling', destination);
                 }else{
                     this.fx(self.$refs.inner, destination, duration);
                 }
@@ -257,7 +279,6 @@
                 var self = this;
 
                 self.scrollEnd();
-
                 var startTime = Date.now(), endTime = startTime + duration;
                 var start = self.pos, range = end - start;
 
@@ -268,7 +289,8 @@
                         self.scrollTo(end);
                         self.scrollEnd(); 
                     }else{
-                        self.scrollTo(parseInt(start) + self.ease((now - startTime) / duration) * range);
+                        var target = parseInt(parseInt(start) + self.ease((now - startTime) / duration) * range);
+                        self.scrollTo(target);
                         self.fxer = Util.rfa(step);
                     }
                 }
@@ -279,19 +301,40 @@
             scrollEnd(){
                 var self = this;
 
-                if(!self.fxer) return;
+                if(!self.fxer || !this.$actived) return;
 
                 Util.crfa(self.fxer);
                 self.fxer = false;
 
                 self.$emit('scroll:end', self.pos);
+            },
 
-                if(self.pos >= self.max){
-                    self.$emit('scroll:limit', self.pos, 1);
-                }else if(self.pos <= self.min){
-                    self.$emit('scroll:limit', self.pos, -1);
-                }
+            limitType(){
+                return this.pos >= this.max ? 1 : (this.pos <= this.min ? -1 : 0);
+            },
+
+            getPos(){
+                return this.pos;
+            },
+        },
+
+        activated(){
+            if(!this.$autosize){
+                return false;
             }
+
+            this.$actived = true;
+            this.$autosize.resize();
+            this.$autosize.observer();
+        },
+
+        deactivated(){
+            if(!this.$autosize){
+                return false;
+            }
+            
+            this.$actived = false;
+            this.$autosize.unobserver();
         }
     }
 </script>

@@ -53,7 +53,8 @@ export default{
 
         if(!container){
             container = document.createElement('div');
-            container.style.cssText = 'position: fixed; bottom: 0px; width: 100%; background: #ccc;';
+            container.id = '__log__';
+            container.style.cssText = 'position: fixed; bottom: 0px; width: 100%; background: #ccc; z-index: 10000;';
             document.body.appendChild(container);
         }
 
@@ -77,8 +78,8 @@ export default{
     },
 
     register(obj, directive = false){
-        var Component = obj.Component || obj;
-
+        var Component = directive ? obj : (obj.Component || obj);
+        
         function install(Vue){
             if(install._installed) return;
 
@@ -87,7 +88,7 @@ export default{
             if(directive){
                 Vue.directive(Component.name, obj);
             }else{
-                Vue.component(`vm-${Component.name}`, obj);
+                Vue.component(Component.name = `vm-${Component.name}`, obj);
             }
         }
 
@@ -100,12 +101,25 @@ export default{
         return obj;
     },
 
-    factory(options, data = {}){
-        var instance = new Vue(options);
+    factory(options, data = {}, container = document.body){
+        var instance = new Vue(options, data);
         Object.assign(instance, data);
         instance.$mount();
-        document.body.appendChild(instance.$el);
+        container.appendChild(instance.$el);
         return instance;
+    },
+
+    defineConfig(obj, _default = {}){
+        obj._config = _default;
+        obj.config = (name, value) => {
+            if(typeof name == 'object'){
+                this.assign(obj._config, name);
+            }else if(value == void 0){
+                return obj._config[name];
+            }else{
+                obj._config[name] = value;
+            }
+        }
     }
 }
 

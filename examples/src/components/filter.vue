@@ -11,15 +11,13 @@
                 </div>
             </dropdown>
             <dropdown label="1级多选">
-                <multiple-filter :source="source" v-model="m_val"></multiple-filter>
+                <multiple-filter :source="source" v-model="m_val" :unlimit="1"></multiple-filter>
             </dropdown>
             <dropdown label="N级联动">
-                <link-filter :level="3" :source="source" v-model="l_val"></link-filter>
+                <link-filter :level="3" :source="source" v-model="l_val" :unlimit-value="-1" :unlimit-start-group="0"></link-filter>
             </dropdown>
 
-            <dropdown label="2级多选">
-                <link-multiple-filter :source="source" v-model="lm_val"></link-multiple-filter>
-            </dropdown>
+
         </div>        
         <link-multiple-filter :source="source" v-model="lm_val"></link-multiple-filter>
         
@@ -64,7 +62,7 @@
             return {
                 source: Source,
                 s_val: 3,
-                m_val: [1, 2],
+                m_val: [1],
                 l_val: ['1', '1-1'],
                 lm_val: null
             }
@@ -89,9 +87,9 @@
         },
 
         mounted () {
-			setInterval(() => {
-				console.log(this.lm_val, 999)
-			}, 1000)
+			// setInterval(() => {
+			// 	console.log(this.lm_val, 999)
+			// }, 1000)
         }
 
         // methods: {

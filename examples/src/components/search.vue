@@ -3,7 +3,6 @@
         <search kw="wd" 
             source="https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su?json=1&cb=?"
             history-mark="history"
-            theme="blue"
             :data-formatter="formatter"
             :close-callback="cancel"
             :fx="false"
